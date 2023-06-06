@@ -13,9 +13,9 @@ conda activate AICUP_2023
 - `data/public_train.jsonl`: 官方提供的訓練資料 (v1)
 - `data/public_train_v2.jsonl`: 官方提供的訓練資料 (v2)
 - `data/public_train_all.jsonl`: 官方提供的訓練資料 (v1 + v2)
-- `public_test.jsonl`：官方提供的測試資料 (public)
-- `private_test_data`：官方提供的測試資料 (private)
-- `public_private_test_all`：官方提供的測試資料 (public + privte)
+- `data/public_test.jsonl`：官方提供的測試資料 (public)
+- `data/private_test_data`：官方提供的測試資料 (private)
+- `data/public_private_test_all`：官方提供的測試資料 (public + privte)
 
 ## 程式架構
 
@@ -26,7 +26,7 @@ conda activate AICUP_2023
     - Recall：在所有相關文檔中，系統找到多少相關的文檔
 - Main function for document retrieval
     - Step 1. Get noun phrases from hanlp consituency parsing tree 
-        - Setup HanLP predictor (1 min)
+        - Setup HanLP predictor
         - creating parsing tree
         - Get pages via wiki online api
     - Step 2. Calculate our results (f1, precision, recall)
@@ -38,7 +38,7 @@ conda activate AICUP_2023
 - Step 1. Setup training environment
 - Step 2. Combine claims and evidences
 - Step 3. Start training
-- Step 4. Check on our test data (5 min)
+- Step 4. Check on our test data
 
 ### PART 3. Claim verification：
 - Step 1. Setup training environment
