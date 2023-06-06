@@ -9,10 +9,6 @@ conda env create -f enviroment.yml
 conda activate AICUP_2023
 ```
 
-```bash create a conda environment from it as follows:
-conda env create -f environment.yml
-```
-
 ## 資料
 - `data/public_train.jsonl`: 官方提供的訓練資料 (v1)
 - `data/public_train_v2.jsonl`: 官方提供的訓練資料 (v2)
