@@ -3,7 +3,6 @@
 ## 運行環境
 
 ### 使用 Anaconda 建立環境
-
 ```bash
 conda env create -f enviroment.yml
 conda activate AICUP_2023
@@ -48,6 +47,5 @@ conda activate AICUP_2023
 ### PART 3. Claim verification：
 - Step 1. Setup training environment
 - Step 2. Concat claim and evidences
-    - join topk evidence
 - Step 3. Training
-- Step 4. Make your submission: Prediction and Write files
+- Step 4. Make submission: Prediction and Write files
