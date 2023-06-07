@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
+### PART 1. Document retrieval ###
 
-#### PART 1. Document retrieval #####
-
-# ===== import all library we need =====
+# ===== import all library =====
 # built-in libs
 import json
 import pickle
@@ -10,6 +8,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Set, Tuple, Union
+
 # 3rd party libs
 import hanlp
 import opencc
@@ -17,12 +16,13 @@ import pandas as pd
 import wikipedia
 from hanlp.components.pipeline import Pipeline
 from pandarallel import pandarallel
+
 # our own libs
 from utils import load_json
 
 pandarallel.initialize(progress_bar=True, verbose=0, nb_workers=10)
 wikipedia.set_lang("zh")
-# ========================================
+# ==============================
 
 # parameters
 page_num = 7 
@@ -72,7 +72,6 @@ class Evidence:
     data: List[List[Tuple[AnnotationID, EvidenceID, PageTitle, SentenceID]]]
 
 # ========== Helper function ==========
-
 # For the sake of consistency, we convert traditional to simplified Chinese first before converting it back to traditional Chinese.  
 # This is due to some errors occuring when converting traditional to traditional Chinese.
 
@@ -83,7 +82,6 @@ CONVERTER_S2T = opencc.OpenCC("s2t.json")
 def do_st_corrections(text: str) -> str: 
     simplified = CONVERTER_T2S.convert(text)
     return CONVERTER_S2T.convert(simplified)
-
 
 # We use constituency parsing to separate part of speeches or so called constituent to extract noun phrases.  
 # In the later stages, we will use the noun phrases as the query to search for relevant documents.  
@@ -104,17 +102,12 @@ def get_nps_hanlp(predictor: Pipeline, d: Dict[str, Union[int, Claim, Evidence]]
 # Precision: 在所有系統檢索到的文檔中，系統找到多少相關的文檔
 # Recall：在所有相關文檔中，系統找到多少相關的文檔  
 
-def calculate_precision(
-    data: List[Dict[str, Union[int, Claim, Evidence]]],
-    predictions: pd.Series,
-) -> None:
+def calculate_precision(data: List[Dict[str, Union[int, Claim, Evidence]]], predictions: pd.Series,) -> None:
     precision = 0
     count = 0
-
     for i, d in enumerate(data):
         if d["label"] == "NOT ENOUGH INFO":
             continue
-
         # Extract all ground truth of titles of the wikipedia pages
         # evidence[2] refers to the title of the wikipedia page
         gt_pages = set([
@@ -122,29 +115,20 @@ def calculate_precision(
             for evidence_set in d["evidence"]
             for evidence in evidence_set
         ])
-
         predicted_pages = predictions.iloc[i]
         hits = predicted_pages.intersection(gt_pages)
         if len(predicted_pages) != 0:
             precision += len(hits) / len(predicted_pages)
-
         count += 1
-
     # Macro precision
     print(f"Precision: {precision / count}")
 
-
-def calculate_recall(
-    data: List[Dict[str, Union[int, Claim, Evidence]]],
-    predictions: pd.Series,
-) -> None:
+def calculate_recall(data: List[Dict[str, Union[int, Claim, Evidence]]], predictions: pd.Series,) -> None:
     recall = 0
     count = 0
-
     for i, d in enumerate(data):
         if d["label"] == "NOT ENOUGH INFO":
             continue
-
         gt_pages = set([
             evidence[2]
             for evidence_set in d["evidence"]
@@ -154,7 +138,6 @@ def calculate_recall(
         hits = predicted_pages.intersection(gt_pages)
         recall += len(hits) / len(gt_pages)
         count += 1
-
     print(f"Recall: {recall / count}")
 
 #==========================================
@@ -164,7 +147,6 @@ The default amount of documents retrieved is at most five documents.
 This `num_pred_doc` can be adjusted based on your objective.  
 Save data in jsonl format.
 """
-
 def save_doc(
     data: List[Dict[str, Union[int, Claim, Evidence]]],
     predictions: pd.Series,
@@ -190,9 +172,6 @@ predictor = (hanlp.pipeline().append(
     output_key="con",
     input_key="tok",
 ))
-
-
-# We will skip this process which for creating parsing tree when demo on class
 
 # creating parsing tree
 hanlp_file = f"data/hanlp_con_results.pkl"
@@ -224,7 +203,7 @@ print('Lenth of hanlp_result: ', len(hanlp_results))
 #============================================
 
 
-# ===== Main function for document retrieval =====
+# Main function for document retrieval
 
 # ========== commen list ==========
 commen_list = ['人', '中國', '臺灣', '美國', '年', '他', '世界', '之一', '其', '日本', '香港', '國家', '民族', 
@@ -250,18 +229,15 @@ def get_pred_pages(series_data: pd.Series) -> Set[Dict[int, str]]:
     first_wiki_term = []
 
     for i, np in enumerate(nps):
-
         '''
         只對一部分的名詞短語進行搜索，將常見且沒有意義的詞過濾。
         可縮小搜索範疇，進而提高程式的效能和結果的精確度。
         '''
         if np not in commen_set:
-          
           # Simplified Traditional Chinese Correction
           wiki_search_results = [
               do_st_corrections(w) for w in wikipedia.search(np)
           ]
-
           # Remove the wiki page's description in brackets (去後綴)
           wiki_set = [re.sub(r"\s\(\S+\)", "", w) for w in wiki_search_results]
 
@@ -269,7 +245,6 @@ def get_pred_pages(series_data: pd.Series) -> Set[Dict[int, str]]:
               "wiki_set": wiki_set,  
               "wiki_results": wiki_search_results  
           })
-
           # Elements in wiki_set --> index
           # Extracting only the first element is one way to avoid extracting too many of the similar wiki pages
           grouped_df = wiki_df.groupby("wiki_set", sort=False).first()
@@ -313,7 +288,7 @@ def get_pred_pages(series_data: pd.Series) -> Set[Dict[int, str]]:
                       mapping[term] = claim.find(new_term)
                       tmp_muji.append(new_term)
 
-    # page_num is a hyperparameter => 可調整page數量(取大一點)
+    # page_num: 可調整page數量(取大一點)
     if len(results) >= page_num:
         assert -1 not in mapping.values()
         results = sorted(mapping, key=mapping.get)[:page_num] 
@@ -323,11 +298,8 @@ def get_pred_pages(series_data: pd.Series) -> Set[Dict[int, str]]:
     return set(results)
 
 
-# ========== Get pages via wiki online api =========
-
-# 設定儲存預測結果的檔案路徑
-doc_path = f"data/train_doc{page_num}.jsonl"  # 10  # 5
-# 檢查檔案是否存在。如果存在，則載入
+# Get pages via wiki online api
+doc_path = f"data/train_doc{page_num}.jsonl"  # 5
 if Path(doc_path).exists():
   print(f'{doc_path} exist')
   with open(doc_path, "r", encoding="utf8") as f:
@@ -335,7 +307,6 @@ if Path(doc_path).exists():
         set(json.loads(line)["predicted_pages"])
         for line in f
     ])
-# 檔案不存在：對訓練資料中的每一筆資料都應用 get_pred_pages 函數，並儲存結果。
 else:
   print(f'{doc_path} does not exist')
   train_df = pd.DataFrame(TRAIN_DATA)
@@ -346,8 +317,8 @@ else:
   print('Finished!')
 
 ### Step 2. Calculate our results ###
-calculate_precision(TRAIN_DATA, predicted_results) # Precision: 0.242 -> 0.262
-calculate_recall(TRAIN_DATA, predicted_results)   # Recall: 0.846 -> 0.852
+calculate_precision(TRAIN_DATA, predicted_results) # Precision: 0.262
+calculate_recall(TRAIN_DATA, predicted_results)   # Recall: 0.852
 
 ### Step 3. Repeat the same process on test set Create parsing tree ###
 hanlp_test_file = f"data/hanlp_con_results_test.pkl"
@@ -370,6 +341,7 @@ if Path(test_doc_path).exists():
             [set(json.loads(line)["predicted_pages"]) for line in f])
 else:
     print(f'{test_doc_path} does not exist')
+    
     test_df = pd.DataFrame(TEST_DATA)
     test_df.loc[:, "hanlp_results"] = hanlp_results_test
     test_results = test_df.parallel_apply(get_pred_pages, axis=1)
