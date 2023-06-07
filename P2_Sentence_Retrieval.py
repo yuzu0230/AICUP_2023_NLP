@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 ###  PART 2. Sentence retrieval ###
 
 # ===== Import some libs =====
@@ -22,7 +20,7 @@ from torch.utils.tensorboard import SummaryWriter
 from transformers import (
     AutoModelForSequenceClassification,
     AutoTokenizer,
-    # BertTokenizer,
+    BertTokenizer,
 )
 from dataset import BERTDataset, Dataset
 
@@ -35,7 +33,6 @@ from utils import (
     save_checkpoint,
     set_lr_scheduler,
 )
-
 import json
 
 pandarallel.initialize(progress_bar=True, verbose=0, nb_workers=10)
@@ -133,7 +130,6 @@ def evidence_macro_recall(instance: Dict, top_rows: pd.DataFrame) -> Tuple[float
         return 0.0, 1.0
     return 0.0, 0.0
 
-
 # Calculate the scores of sentence retrieval
 def evaluate_retrieval(
     probs: np.ndarray,
@@ -206,12 +202,10 @@ def get_predicted_probs(model: nn.Module, dataloader: Dataset,device: torch.devi
 
 # AicupTopkEvidenceBERTDataset class for AICUP dataset with top-k evidence sentences
 class SentRetrievalBERTDataset(BERTDataset):
-
     def __getitem__(self, idx: int, **kwargs,) -> Tuple[Dict[str, torch.Tensor], int]:
         item = self.data.iloc[idx]
         sentA = item["claim"]
         sentB = item["text"]
-
         # claim [SEP] text
         concat = self.tokenizer(
             sentA,
@@ -223,21 +217,18 @@ class SentRetrievalBERTDataset(BERTDataset):
         concat_ten = {k: torch.tensor(v) for k, v in concat.items()}
         if "label" in item:
             concat_ten["labels"] = torch.tensor(item["label"])
-
         return concat_ten
 
-"""### Main function for sentence retrieval"""
+# Main function for sentence retrieval
 # Only for creating train sentences.
 def pair_with_wiki_sentences(mapping: Dict[str, Dict[int, str]], df: pd.DataFrame, negative_ratio: float) -> pd.DataFrame:
     claims = []
     sentences = []
     labels = []
-
     # positive
     for i in range(len(df)):
         if df["label"].iloc[i] == "NOT ENOUGH INFO":
             continue
-
         claim = df["claim"].iloc[i]
         evidence_sets = df["evidence"].iloc[i]
         for evidence_set in evidence_sets:
@@ -251,9 +242,7 @@ def pair_with_wiki_sentences(mapping: Dict[str, Dict[int, str]], df: pd.DataFram
                 # evidence[3] is in form of int however, mapping requires str
                 sent_idx = str(evidence[3])
                 sents.append(mapping[page][sent_idx])
-
             whole_evidence = " ".join(sents)
-
             claims.append(claim)
             sentences.append(whole_evidence)
             labels.append(1)
@@ -349,22 +338,16 @@ TOP_N = 5  # 7
 EXP_DIR = f"sent_retrieval/e{NUM_EPOCHS}_bs{TRAIN_BATCH_SIZE}_{LR}_neg{NEGATIVE_RATIO}_top{TOP_N}"
 LOG_DIR = "logs/" + EXP_DIR
 CKPT_DIR = "checkpoints/" + EXP_DIR
-
 if not Path(LOG_DIR).exists():
-#   print('not exist')
     Path(LOG_DIR).mkdir(parents=True)
-
 if not Path(CKPT_DIR).exists():
-#   print('not exist')
     Path(CKPT_DIR).mkdir(parents=True)
 
 # ===== Step 2. Combine claims and evidences =====
 train_df = pair_with_wiki_sentences(mapping, pd.DataFrame(TRAIN_GT), NEGATIVE_RATIO)
-
 print("Now using the following train data with 0 (Negative) and 1 (Positive)")
 counts = train_df["label"].value_counts()
 print(counts)
-
 dev_evidences = pair_with_wiki_sentences_eval(mapping, pd.DataFrame(DEV_GT))
 # ================================================
 
@@ -503,5 +486,3 @@ evaluate_retrieval(
     save_name=f"test_doc{page_num}sent{TOP_N}.jsonl",
 )
 # ==========================================
-
-
