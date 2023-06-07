@@ -18,8 +18,8 @@ conda activate AICUP_2023
 - `data/public_private_test_all`：官方提供的測試資料 (public + privte)
 
 ### 已經完成訓練的模型權重 (checkpoint) 之下載連結：
-- Link:https://drive.google.com/drive/folders/1qRS0XKUKVorXoQFNUWEdMb4USqQqPebP?usp=sharing
-- Sentence Retrival:model.350.pt  
+- Link: https://drive.google.com/drive/folders/1qRS0XKUKVorXoQFNUWEdMb4USqQqPebP?usp=sharing
+- Sentence Retrival: model.350.pt  
 - Claim verification: val_acc=0.5099_model.1900.pt
 
 ## 程式架構
