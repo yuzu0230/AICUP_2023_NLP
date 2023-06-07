@@ -204,8 +204,8 @@ print('Lenth of hanlp_result: ', len(hanlp_results))
 
 # Main function for document retrieval
 
-# ========== commen list ==========
-commen_list = ['人', '中國', '臺灣', '美國', '年', '他', '世界', '之一', '其', '日本', '香港', '國家', '民族', 
+# ========== common list ==========
+common_list = ['人', '中國', '臺灣', '美國', '年', '他', '世界', '之一', '其', '日本', '香港', '國家', '民族', 
         '政府', '希臘', '地區', '其中', '英國', '歐洲', '總統', '概念', '人類', '神話', '電影', '世紀', 
         '國', '馬克思', '時期', '語言', '作品', '自己', '族羣', '城市', '動物', '皇帝', '亞洲', '法國', 
         '學校', '目前', '大學', '者', '一', '生物', '昆蟲', '獎', '人羣', '德國', '衛星', '同一族羣', 
@@ -215,7 +215,7 @@ commen_list = ['人', '中國', '臺灣', '美國', '年', '他', '世界', '之
         '地', '詞', '南部', '字', '核', '小時', '人物', '規模', '區', '漢', '水', '臺', '地方', '衛', 
         '時間', '文化', '表面', '內容', '目的', '當時', '日', '她', '他們', '子', '名字', '市', '早期' ]
 
-commen_set = set(commen_list)  # 轉換成 set 以提高檢查速度
+common_set = set(common_list)  # 轉換成 set 以提高檢查速度
 # =================================
 
 def get_pred_pages(series_data: pd.Series) -> Set[Dict[int, str]]:
@@ -232,7 +232,7 @@ def get_pred_pages(series_data: pd.Series) -> Set[Dict[int, str]]:
         只對一部分的名詞短語進行搜索，將常見且沒有意義的詞過濾。
         可縮小搜索範疇，進而提高程式的效能和結果的精確度。
         '''
-        if np not in commen_set:
+        if np not in common_set:
           # Simplified Traditional Chinese Correction
           wiki_search_results = [
               do_st_corrections(w) for w in wikipedia.search(np)
