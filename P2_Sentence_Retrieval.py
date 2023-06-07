@@ -446,7 +446,7 @@ print("Finished training!")
 # =============================
 
 # ===== Validation part =====
-ckpt_name = "model.650.pt"   # change the ckpt_name 
+ckpt_name = "model.350.pt"   # change the ckpt_name 
 model = load_model(model, ckpt_name, CKPT_DIR)
 print("Start final evaluations and write prediction files.")
 
