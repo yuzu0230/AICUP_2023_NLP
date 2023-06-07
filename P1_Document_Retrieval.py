@@ -252,10 +252,10 @@ def get_pred_pages(series_data: pd.Series) -> Set[Dict[int, str]]:
     for i, np in enumerate(nps):
 
         '''
-        只對一部分的名詞短語進行搜索，將常見且沒有意義的詞過濾
+        只對一部分的名詞短語進行搜索，將常見且沒有意義的詞過濾。
         可縮小搜索範疇，進而提高程式的效能和結果的精確度。
         '''
-        if np not in commen_set:  # 僅對出現頻率最高的名詞短語進行搜索
+        if np not in commen_set:
           
           # Simplified Traditional Chinese Correction
           wiki_search_results = [
