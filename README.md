@@ -1,4 +1,7 @@
 # AI CUP 2023 Fall NLP
+- Competitions: 「真相只有一個: 事實文字檢索與查核競賽」
+- 「T-Brain AI實戰吧」官網: https://tbrain.trendmicro.com.tw/Competitions/Details/28
+
 
 ## 運行環境
 
@@ -20,6 +23,7 @@ conda activate AICUP_2023
 - Link: https://drive.google.com/drive/folders/1qRS0XKUKVorXoQFNUWEdMb4USqQqPebP?usp=sharing
 - Sentence Retrival: model.350.pt  
 - Claim verification: val_acc=0.5099_model.1900.pt
+
 
 ## 程式架構
 
