@@ -485,4 +485,3 @@ evaluate_retrieval(
     cal_scores=False,
     save_name=f"test_doc{page_num}sent{TOP_N}.jsonl",
 )
-# ==========================================
