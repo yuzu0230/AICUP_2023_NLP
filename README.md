@@ -27,8 +27,8 @@ conda activate AICUP_2023
 ### PART 1. Document retrieval： 
 - We use constituency parsing to separate part of speeches or so called constituent to extract noun phrases. In the later stages, we will use the noun phrases as the query to search for relevant documents.
 - Caulate Precision and Recall
-    - Precision: 在所有系統檢索到的文檔中，系統找到多少相關的文檔
-    - Recall：在所有相關文檔中，系統找到多少相關的文檔
+    - Precision: Among all the documents retrieved, how many are actually relevant.
+    - Recall: Among all the relevant documents that should have been found, how many were successfully retrieved.
 - Main function for document retrieval
     - Step 1. Get noun phrases from hanlp consituency parsing tree 
         - Setup HanLP predictor
