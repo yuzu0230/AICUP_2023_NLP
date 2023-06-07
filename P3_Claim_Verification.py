@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
+### PART 3. Claim verification ###
 
-## PART 3. Claim verification
 # import libs
 import pickle
 from pathlib import Path
@@ -49,19 +48,16 @@ TRAIN_PKL_FILE = Path(f"data/train_doc{page_num}sent{TOP_N}.pkl")
 DEV_PKL_FILE = Path(f"data/dev_doc{page_num}sent{TOP_N}.pkl")
 # ======================================
 
-# ===== Preload wiki database (same as part 2.) =====
+# Preload wiki database (same as part 2.)
 wiki_pages = jsonl_dir_to_df("data/wiki-pages")
 mapping = generate_evidence_to_wiki_pages_mapping(wiki_pages,)
 del wiki_pages
-#====================================================
-
 
 # ========== Helper function ==========
 # AICUP dataset with top-k evidence sentences.
 
 class AicupTopkEvidenceBERTDataset(BERTDataset):
     """AICUP dataset with top-k evidence sentences."""
-
     def __getitem__(
         self,
         idx: int,
@@ -75,7 +71,6 @@ class AicupTopkEvidenceBERTDataset(BERTDataset):
         pad = ["[PAD]"] * (self.topk - len(evidence))
         evidence += pad
         concat_claim_evidence = " [SEP] ".join([*claim, *evidence])
-
         concat = self.tokenizer(
             concat_claim_evidence,
             padding="max_length",
@@ -84,37 +79,30 @@ class AicupTopkEvidenceBERTDataset(BERTDataset):
         )
         label = LABEL2ID[item["label"]] if "label" in item else -1
         concat_ten = {k: torch.tensor(v) for k, v in concat.items()}
-
         if "label" in item:
             concat_ten["labels"] = torch.tensor(label)
-
         return concat_ten
 
 # Evaluation function
 def run_evaluation(model: torch.nn.Module, dataloader: DataLoader, device):
     model.eval()
-
     loss = 0
     y_true = []
     y_pred = []
     with torch.no_grad():
         for batch in tqdm(dataloader):
             y_true.extend(batch["labels"].tolist())
-
             batch = {k: v.to(device) for k, v in batch.items()}
             outputs = model(**batch)
             loss += outputs.loss.item()
             logits = outputs.logits
             y_pred.extend(torch.argmax(logits, dim=1).tolist())
-
     acc = accuracy_score(y_true, y_pred)
-
     return {"val_loss": loss / len(dataloader), "val_acc": acc}
 
 # Prediction
 def run_predict(model: torch.nn.Module, test_dl: DataLoader, device) -> list:
     model.eval()
-
     preds = []
     for batch in tqdm(test_dl, total=len(test_dl), leave=False, desc="Predicting"):
         batch = {k: v.to(device) for k, v in batch.items()}
@@ -126,7 +114,7 @@ def run_predict(model: torch.nn.Module, test_dl: DataLoader, device) -> list:
 
 # ========== Main function ==========
 def join_with_topk_evidence(df: pd.DataFrame, mapping: dict, mode: str = "train", topk: int = 5) -> pd.DataFrame:
-    """join_with_topk_evidence join the dataset with topk evidence.
+    """join the dataset with topk evidence.
     Args:
         df (pd.DataFrame): The dataset with evidence.
         wiki_pages (pd.DataFrame): The wiki pages dataframe
@@ -143,7 +131,6 @@ def join_with_topk_evidence(df: pd.DataFrame, mapping: dict, mode: str = "train"
         df["evidence"] = df["evidence"].parallel_map(
             lambda x: [[x]] if not isinstance(x[0], list) else [x]
             if not isinstance(x[0][0], list) else x)
-
     print(f"Extracting evidence_list for the {mode} mode ...")
     if mode == "eval":
         # extract evidence
@@ -161,12 +148,11 @@ def join_with_topk_evidence(df: pd.DataFrame, mapping: dict, mode: str = "train"
             ]) if isinstance(evi_list, list) else ""
             for evi_list in x  # for each evidence list
         ][:1] if isinstance(x, list) else [])
-
     return df
 # ===================================
 
 
-# ===== Step 1. Setup training environment =====
+### Step 1. Setup training environment
 
 # ========== Hyperparams ==========
 # model:https://github.com/ymcui/Chinese-BERT-wwm
@@ -187,14 +173,12 @@ OUTPUT_FILENAME = "submission.jsonl"
 EXP_DIR = f"claim_verification/e{NUM_EPOCHS}_bs{TRAIN_BATCH_SIZE}_" + f"{LR}_top{EVIDENCE_TOPK}"
 LOG_DIR = "logs/" + EXP_DIR
 CKPT_DIR = "checkpoints/" + EXP_DIR
-
 if not Path(LOG_DIR).exists():
     Path(LOG_DIR).mkdir(parents=True)
-
 if not Path(CKPT_DIR).exists():
     Path(CKPT_DIR).mkdir(parents=True)
 
-# ===== Step 2. Concat claim and evidences =====
+### Step 2. Concat claim and evidences 
 # join topk evidence
 if not TRAIN_PKL_FILE.exists():
     train_df = join_with_topk_evidence(
@@ -206,7 +190,6 @@ if not TRAIN_PKL_FILE.exists():
 else:
     with open(TRAIN_PKL_FILE, "rb") as f:
         train_df = pickle.load(f)
-
 if not DEV_PKL_FILE.exists():
     dev_df = join_with_topk_evidence(
         pd.DataFrame(DEV_DATA),
@@ -218,9 +201,8 @@ if not DEV_PKL_FILE.exists():
 else:
     with open(DEV_PKL_FILE, "rb") as f:
         dev_df = pickle.load(f)
-# ==============================================
 
-# ========== Step 3. Training ==========
+### Step 3. Training
 
 # Prevent CUDA out of memory
 torch.cuda.empty_cache()
@@ -255,8 +237,6 @@ num_training_steps = NUM_EPOCHS * len(train_dataloader)
 lr_scheduler = set_lr_scheduler(optimizer, num_training_steps)
 
 writer = SummaryWriter(LOG_DIR)
-
-# ======================================
 
 # ========== Training ==========
 progress_bar = tqdm(range(num_training_steps))
@@ -301,8 +281,7 @@ for epoch in range(NUM_EPOCHS):
 print("Finished training!")
 # ==============================
 
-
-# ===== Step 4. Make your submission =====
+### Step 4. Make submission
 TEST_DATA = load_json(f"data/test_doc{page_num}sent{TOP_N}.jsonl")
 TEST_PKL_FILE = Path(f"data/test_doc{page_num}sent{TOP_N}.pkl")
 
@@ -339,5 +318,3 @@ predict_dataset[["id", "predicted_label", "predicted_evidence"]].to_json(
     lines=True,
     force_ascii=False,
 )
-
-# ========================================
