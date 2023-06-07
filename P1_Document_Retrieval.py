@@ -97,7 +97,6 @@ def get_nps_hanlp(predictor: Pipeline, d: Dict[str, Union[int, Claim, Evidence]]
     ]
     return nps
 
-
 # ===== Caulate Precision and Recall =====
 # Precision: 在所有系統檢索到的文檔中，系統找到多少相關的文檔
 # Recall：在所有相關文檔中，系統找到多少相關的文檔  
