@@ -98,8 +98,8 @@ def get_nps_hanlp(predictor: Pipeline, d: Dict[str, Union[int, Claim, Evidence]]
     return nps
 
 # ===== Caulate Precision and Recall =====
-# Precision: 在所有系統檢索到的文檔中，系統找到多少相關的文檔
-# Recall：在所有相關文檔中，系統找到多少相關的文檔  
+# Precision（精確度）: 在所有被檢索到的文檔中，有多少實際上是相關的。
+# Recall（召回率）: 在所有應該被找到的相關文檔中，有多少被成功找到。
 
 def calculate_precision(data: List[Dict[str, Union[int, Claim, Evidence]]], predictions: pd.Series,) -> None:
     precision = 0
