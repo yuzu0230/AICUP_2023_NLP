@@ -1,6 +1,7 @@
 # AI CUP 2023 Fall NLP
 - Competitions: 「真相只有一個: 事實文字檢索與查核競賽」
-- 「T-Brain AI實戰吧」官網: https://tbrain.trendmicro.com.tw/Competitions/Details/28
+- 「T-Brain AI實戰吧」官網: https://tbrain.trendmicro.com.tw/Competitions/Details/28\
+- Final Report: https://docs.google.com/document/d/1ng73ByqHX7_qwKRT675fDIL1vcdK2IR_Gn2ycHGpddE/mobilebasic
 
 
 ## 運行環境
